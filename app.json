@@ -9,9 +9,9 @@
       "android",
       "web"
     ],
-    "version": "1.0.0",
+    "version": "5",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/playicon.png",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -24,8 +24,14 @@
       "**/*"
     ],
     "ios": {
+      "bundleIdentifier": "com.idrak.randomfacts",
+      "buildNumber": "1.0.0",
       "supportsTablet": true
     },
-    "description": ""
+    "android": {
+      "package": "com.idrak.randomfacts",
+      "versionCode": 5
+    },
+    "description": "Random facts on the go"
   }
 }

@@ -1,26 +1,28 @@
 import React from 'react';
 import { AppLoading } from 'expo';
-import { StyleSheet, Platform, StatusBar, Image, Text, ScrollView } from 'react-native';
-import { Container, Header, Left, Body, Right, Title, Button } from 'native-base';
+import { StyleSheet, Platform, StatusBar, Text, View } from 'react-native';
+import { Header, Body, Title } from 'native-base';
 import * as Font from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
-import FactHolder from './components/FactHolder';
 import axios from 'axios';
-import AnimatedLoader from "react-native-animated-loader";
+import FactHolder from './components/FactHolder';
+import Colors from './Colors';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       isReady: false,
-      fact: ''
+      fact: '',
+      facts: []
     };
   }
 
   async componentDidMount() {
     axios.get('https://uselessfacts.jsph.pl/random.json?language=en')
     .then(doc => {
-      this.setState({fact:doc.data.text, loader: false})
+      this.setState({fact:`${doc.data.text}`, loader: false, facts: [doc.data.text]})
     }).catch(e => {
       console.log(e);
     });
@@ -36,10 +38,26 @@ export default class App extends React.Component {
     this.setState({fact: ''})
     axios.get('https://uselessfacts.jsph.pl/random.json?language=en')
     .then(doc => {
-      this.setState({fact:doc.data.text})
+      this.setState({fact:`${doc.data.text}`, facts: [...this.state.facts, doc.data.text]})
     }).catch(e => {
       console.log(e);
     });
+  }
+
+  next = () => {
+    const currentFact = this.state.fact;
+    var currentFacts = [...this.state.facts];
+    if (currentFact !== currentFacts[currentFacts.length - 1]) {
+      this.setState({fact:currentFacts[currentFacts.indexOf(currentFact) + 1]});
+    }
+  }
+
+  back = () => {
+    const currentFact = this.state.fact;
+    var currentFacts = [...this.state.facts];
+    if (currentFact !== currentFacts[0]) {
+      this.setState({fact:currentFacts[currentFacts.indexOf(currentFact) - 1]});
+    }
   }
 
   render() {
@@ -48,60 +66,39 @@ export default class App extends React.Component {
       return <AppLoading />;
     }
     if (this.state.fact == '') {
-      loader = <Text style={{color: '#E26A5C', fontSize: 16}}>loading</Text>
+      loader = <Text style={{color: 'white', fontSize: 16}}>loading</Text>
     } else {
       loader = <Text></Text>;
     }
     return (
-      <ScrollView style={Styles.container}>
-        <Header style={{backgroundColor: '#E26A5C'}}>
-          <Left/>
-          <Body>
-            <Title>Random Facts</Title>
-          </Body>
-          <Right/>
-        </Header>
-        <Container style={Styles.content}>
-          <Image 
-            source={{uri: 'https://cdn4.iconfinder.com/data/icons/game-design-flat-icons-2/512/13_dice_roll_random_game_design_flat_icon-512.png'}}
-            style={{width: 100, height: 100}}
-          />
-          <Text style={Styles.title}>Generate Random Fact</Text>
-          <FactHolder>
-            {loader}
-            {this.state.fact}
-          </FactHolder>
-          <Button onPress={this.newFact} large style={{padding: 40, backgroundColor: '#E26A5C'}}>
-            <Text style={Styles.buttonText}>New Fact</Text>
-          </Button>
-        </Container>
-      </ScrollView>
+        <View style={styles.container}>
+          <LinearGradient style={{width: '100%', height: '100%'}} colors={[Colors.secondary, Colors.primary, '#000000']}>
+            <Header style={{backgroundColor: Colors.primary, width: '100%', marginBottom: 40}}>
+                <Body>
+                  <Title style={styles.headerTitle}>Random Facts</Title>
+                </Body>
+            </Header>
+            <FactHolder next={this.next} back={this.back} loader={loader} fact={this.state.fact} newFact={this.newFact}/>
+          </LinearGradient>
+        </View>
+      
     );
   }
 }
 
-const Styles = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
     ...Platform.select({
         android: {
             marginTop: StatusBar.currentHeight
         }
-    })
-  },
-  content: {
+    }),
     alignItems: 'center',
-    paddingTop: 70,
-    backgroundColor: '#292929'
+    flexWrap: 'wrap'
   },
-  title: {
-    fontSize: 20,
-    fontFamily: 'Roboto_medium',
-    color: 'white',
-    paddingVertical: 15
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 27
+  headerTitle: {
+    color: Platform.OS === 'ios' ? 'white' : 'white',
+    marginLeft: 20
   }
 });
